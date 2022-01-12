@@ -142,7 +142,7 @@ export class Slide {
     this.onMove = this.onMove.bind(this);
     this.onEnd = this.onEnd.bind(this);
     this.activePrevSlide = this.activePrevSlide.bind(this);
-    this.activeNextSlide = this.activeNextSlide.bind(this)
+    this.activeNextSlide = this.activeNextSlide.bind(this);
     this.onResize = debounce(this.onResize.bind(this), 200);
   }
 
@@ -152,19 +152,54 @@ export class Slide {
     this.slidesConfig();
     this.transition(true);
     this.addResizeEvent();
-    this.changeSlide(3)
+    this.changeSlide(3);
     return this;
   }
 }
 
 export class SlideNav extends Slide {
+  constructor(slide, wrapper) {
+    super(slide, wrapper);
+    this.bindControlEvents();
+  }
+
   addArrow(prev, next) {
     this.prevElement = document.querySelector(prev);
     this.nextElement = document.querySelector(next);
-    this.addArrowEvent()
+    this.addArrowEvent();
   }
   addArrowEvent() {
     this.prevElement.addEventListener("click", this.activePrevSlide);
     this.nextElement.addEventListener("click", this.activeNextSlide);
+  }
+  createControl() {
+    const control = document.createElement("ul");
+    control.dataset.control = "slide";
+
+    this.slideArray.forEach((item, index) => {
+      control.innerHTML += `<li><a href="#slide${index + 1}">${index}</a></li>`;
+    });
+    this.wrapper.appendChild(control);
+    return control;
+  }
+  eventControl(item, index) {
+    item.addEventListener("click", (event) => {
+      event.preventDefault();
+      this.changeSlide(index);
+      this.activeControlItem();
+    });
+  }
+  activeControlItem() {
+    this.controlArray.forEach((item) => item.classList.remove(this.activeClass));
+    this.controlArray[this.index.active].classList.add(this.activeClass);
+  }
+  addControl(customControl) {
+    this.control =
+      document.querySelector(customControl) || this.createControl();
+    this.controlArray = [...this.control.children];
+    this.controlArray.forEach(this.eventControl);
+  }
+  bindControlEvents() {
+    this.eventControl = this.eventControl.bind(this);
   }
 }
